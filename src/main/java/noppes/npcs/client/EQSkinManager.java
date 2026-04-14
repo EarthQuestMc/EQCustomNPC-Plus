@@ -66,12 +66,13 @@ public class EQSkinManager {
 
     private static ResourceLocation download(String username) {
         try {
-            URL url = new URL("https://api.earthquest.fr/request/" + username + "/skin");
+            URL url = new URL("https://api.earthquest.fr/api/v1/public/skins/" + username + "/skin.png");
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
             con.setConnectTimeout(5000);
             con.setReadTimeout(5000);
-            con.setUseCaches(true);
+            con.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
+            con.setRequestProperty("Accept", "image/*,*/*;q=0.8");
 
             if (con.getResponseCode() != 200)
                 return null;
