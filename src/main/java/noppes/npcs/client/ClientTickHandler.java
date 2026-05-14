@@ -11,6 +11,7 @@ import kamkeel.npcs.network.packets.player.InputDevicePacket;
 import kamkeel.npcs.network.packets.player.SpecialKeyStatePacket;
 import kamkeel.npcs.network.packets.player.ScreenSizePacket;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.ContainerPlayer;
@@ -60,7 +61,7 @@ public class ClientTickHandler {
         if (event.phase == Phase.START) {
             EntityPlayer player = mc.thePlayer;
             if (player != null) {
-                boolean specialKeyDown = ClientProxy.SpecialKey != null && Keyboard.isKeyDown(ClientProxy.SpecialKey.getKeyCode());
+                boolean specialKeyDown = isBindingDown(ClientProxy.SpecialKey);
                 if (specialKeyDown != lastSpecialKeyDown) {
                     PlayerData data = CustomNpcs.proxy.getPlayerData(player);
                     if (data != null) {
@@ -164,6 +165,20 @@ public class ClientTickHandler {
     }
 
     private final int SCAN_RANGE = 128;
+
+    private boolean isBindingDown(KeyBinding binding) {
+        if (binding == null) {
+            return false;
+        }
+
+        int keyCode = binding.getKeyCode();
+        if (keyCode < 0) {
+            int mouseButton = keyCode + 100;
+            return mouseButton >= 0 && Mouse.isButtonDown(mouseButton);
+        }
+
+        return keyCode > 0 && Keyboard.isKeyDown(keyCode);
+    }
 
     private void updateCompassMarks() {
         Minecraft mc = Minecraft.getMinecraft();

@@ -9,6 +9,7 @@ import kamkeel.npcs.controllers.data.attribute.AttributeValueType;
 import kamkeel.npcs.controllers.data.attribute.requirement.IRequirementChecker;
 import kamkeel.npcs.controllers.data.attribute.requirement.RequirementCheckerRegistry;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -18,6 +19,7 @@ import noppes.npcs.client.ClientProxy;
 import noppes.npcs.controllers.MagicController;
 import noppes.npcs.controllers.data.Magic;
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.input.Mouse;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -235,7 +237,7 @@ public class AttributeItemUtil {
         // Get the RPGCore compound and then the Attributes compound.
         NBTTagCompound rpgCore = compound.hasKey(TAG_RPGCORE) ? compound.getCompoundTag(TAG_RPGCORE) : new NBTTagCompound();
         NBTTagCompound attrTag = rpgCore.hasKey(TAG_ATTRIBUTES) ? rpgCore.getCompoundTag(TAG_ATTRIBUTES) : new NBTTagCompound();
-        if (Keyboard.isKeyDown(ClientProxy.NPCButton.getKeyCode())) {
+        if (isBindingDown(ClientProxy.NPCButton)) {
             List<String> newTooltips = new ArrayList<>();
             if (!tooltip.isEmpty()) {
                 newTooltips.add(tooltip.get(0));
@@ -327,11 +329,42 @@ public class AttributeItemUtil {
 
             tooltip = newTooltips;
         } else {
-            String keyName = Keyboard.getKeyName(ClientProxy.NPCButton.getKeyCode());
+            String keyName = getBindingName(ClientProxy.NPCButton);
             tooltip.add(EnumChatFormatting.YELLOW + "" + EnumChatFormatting.ITALIC +
                 StatCollector.translateToLocal("rpgcore:tooltip").replace("%key%", keyName));
         }
         return tooltip;
+    }
+
+    @SideOnly(Side.CLIENT)
+    private static boolean isBindingDown(KeyBinding binding) {
+        if (binding == null) {
+            return false;
+        }
+
+        int keyCode = binding.getKeyCode();
+        if (keyCode < 0) {
+            int mouseButton = keyCode + 100;
+            return mouseButton >= 0 && Mouse.isButtonDown(mouseButton);
+        }
+
+        return keyCode > 0 && Keyboard.isKeyDown(keyCode);
+    }
+
+    @SideOnly(Side.CLIENT)
+    private static String getBindingName(KeyBinding binding) {
+        if (binding == null) {
+            return "UNKNOWN";
+        }
+
+        int keyCode = binding.getKeyCode();
+        if (keyCode < 0) {
+            int mouseButton = keyCode + 100;
+            return mouseButton >= 0 ? "MOUSE " + (mouseButton + 1) : "UNKNOWN";
+        }
+
+        String name = Keyboard.getKeyName(keyCode);
+        return name == null ? "UNKNOWN" : name;
     }
 
     /**
